@@ -8,7 +8,7 @@ General purpose utilities:
 - **entity-parser:** generic functions for parsing input
 - **errors:** generic REST HTTP errors
 - **math:** mathematical utilities
-- **merge-sort:** it should not work
+- **merge-sort:** implementation of the merge-sort algorithm
 - **no-diacritics:** remove diacritics and other phonetical symbols
 - **read-huge-file:** file reader specifically designed for huge files
 - **requie-all:** require modules in a folder
