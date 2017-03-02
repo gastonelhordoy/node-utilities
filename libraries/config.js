@@ -10,7 +10,7 @@ so that configs can be overridden using environment variables,
 env:
   ("HOST" is not set)
   PORT=80
-  HOME=/Users/marvin
+  HOME=/Users/sample
 
 defaults:
   {
@@ -30,12 +30,13 @@ const nconf = require('nconf');
 const konphyg = require('konphyg');
 
 
-module.exports = function (appName, path, separator) {
-  path      = path || './configs';
-  separator = separator || '__';
+module.exports = function (appName, options) {
+  options = options || {};
+  var path      = options.path || './configs';
+  var separator = options.separator || '__';
 
   // Let konphyg grab the default config for the current NODE_ENV
-  const defaults  = konphyg(path)(appName);
+  const defaults  = konphyg(path, options.environment)(appName);
   const whitelist = [];
 
   // Convert all keys to flat ENV_const format
