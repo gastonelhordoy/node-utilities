@@ -35,10 +35,12 @@ function parseQueryStringParam(req, key, flexible, logger) {
 // Also, req.query.q is moved to req.qTerm.
 function buildQuerifyConditions(options) {
   options = options || {};
+  options.errMessage = options.errMessage || 'Invalid query conditions';
 
+  // create middleware
   return function querifyConditionsMiddleware(req, res, next) {
     if (!parseQueryStringParam(req, 'conditions', false, options.logger)) {
-      return next(new errors.BadRequest('Condiciones de búsqueda no válidas'));
+      return next(new errors.BadRequest(options.errMessage, options.berrCode));
     }
 
     req.conditions = _.deepMapValues(req.query.conditions || {}, (value, path) => {
@@ -65,10 +67,12 @@ function buildQuerifyConditions(options) {
 function buildQuerifyOptions(options) {
   options = options || {};
   options.cleanup = options.cleanup || false;
+  options.errMessage = options.errMessage || 'Invalid query options';
 
+  // create middleware
   return function querifyOptionsMiddleware(req, res, next) {
     if (_.isString(req.query.populate) && !parseQueryStringParam(req, 'populate', true, options.logger)) {
-      return next(new errors.BadRequest('Opciones de búsqueda no válidas'));
+      return next(new errors.BadRequest(options.errMessage, options.berrCode));
     }
 
     if (options.cleanup) {
@@ -84,21 +88,35 @@ function buildQuerifyOptions(options) {
 // Middlewware that covers the full range of options for a query,
 // including conditions, pagination, sorting, population and field selection
 function buildQuerify(options) {
+  // assign defaults
   options = options || {};
-  options.maxQueryResults = options.maxQueryResults || 500;
+  _.defaults(options, {
+    maxQueryResults: 500,
+    errs: {
+      invalidPageMessage: 'Page number must be greater then 0 (zero)',
+      queryResultsMessage: 'Number of query results must be greater then 0 (zero)',
+      sortOrderMessage: 'Invalid query sort order'
+    }
+  });
 
+  // pre-build middlewares for parsing options and conditions
   const querifyOptions = buildQuerifyOptions({
     cleanup: false,
-    logger: options.logger
+    logger: options.logger,
+    errMessage: options.errs.queryOptionsMessage,
+    berrCode: options.errs.queryOptionsBerrCode
   });
   const querifyConditions = buildQuerifyConditions({
-    logger: options.logger
+    logger: options.logger,
+    errMessage: options.errs.queryConditionsMessage,
+    berrCode: options.errs.queryConditionsBerrCode
   });
 
+  // create middleware
   return function querifyMiddleware(req, res, next) {
     req.query.page = req.query.page && parseInt(req.query.page);
     if (req.query.page && req.query.page < 0) {
-      return next(new errors.BadRequest('El número de página a obtener debe ser mayor a 0 (cero)'));
+      return next(new errors.BadRequest(options.errs.invalidPageMessage, options.errs.invalidPageBerrCode));
     }
 
     // always limit the number of information that can be retrieved
@@ -106,11 +124,11 @@ function buildQuerify(options) {
     if (!req.query.limit || req.query.limit > options.maxQueryResults) {
       req.query.limit = options.maxQueryResults;
     } else if (req.query.limit < 0) {
-      return next(new errors.BadRequest('La cantidad de registros a obtener debe ser mayor a 0 (cero)'));
+      return next(new errors.BadRequest(options.errs.queryResultsMessage, options.errs.queryResultsBerrCode));
     }
 
     if (!parseQueryStringParam(req, 'sort', false, options.logger)) {
-      return next(new errors.BadRequest('Ordenamiento de búsqueda no válido'));
+      return next(new errors.BadRequest(options.errs.sortOrderMessage, options.errs.sortOrderBerrCode));
     }
 
     querifyConditions(req, res, function(err) {
@@ -129,36 +147,38 @@ function buildQuerify(options) {
 // https://davidbeath.com/posts/expressjs-40-basicauth.html
 // this can be used for generating credentials with format name:pass
 // http://www.motobit.com/util/base64-decoder-encoder.asp
-function buildBasicAuth(config) {
-  if (!config.name || !config.pass) {
+function buildBasicAuth(options) {
+  options = options || {};
+  options.errMessage = options.errMessage || 'Invalid credentials';
+
+  if (!options.name || !options.pass) {
     throw new Error('BasicAuth middleware requires name and pass');
   }
 
   return function basicAuthMiddleware(req, res, next) {
     const credentials = basicAuth(req);
 
-    if (credentials && credentials.name === config.name && credentials.pass === config.pass) {
+    if (credentials && credentials.name === options.name && credentials.pass === options.pass) {
       return next();
     }
-    next(new errors.InvalidCredentials('Autenticación inválida'));
+    next(new errors.InvalidCredentials(options.errMessage, options.berrCode));
   };
 }
 
 function buildBodyCleaner(options) {
   options = options || {};
   _.defaults(options, {
-    errMessage: 'Missing body',
-    berrCode: ''
+    errMessage: 'Missing body'
   });
+
   let fields = ['id', '_id', 'createdAt', 'modifiedAt', 'createdBy', 'modifiedBy', '__t', '__v', '_action', '_version'];
   if (!_.isEmpty(options.fields)) {
     fields = fields.concat(options.fields);
   }
 
-
   return function bodyCleanerMiddleware(req, res, next) {
     if (!req.body || _.isEmpty(req.body)) {
-      next(new errors.BadRequest(options.errMessage));
+      next(new errors.BadRequest(options.errMessage, options.berrCode));
     } else {
       _.each(fields, field => {
         delete req.body[field];
