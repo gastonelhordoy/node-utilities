@@ -10,7 +10,7 @@ const errors = {
   InvalidCredentials: 401,
   PaymentRequired   : 402,
   Forbidden         : 403,
-  ResourceNotFound  : 404,
+  NotFound          : 404,
   NotSupported      : 405,
   Conflict          : 409,
 
@@ -20,22 +20,28 @@ const errors = {
 };
 
 Object.keys(errors).forEach(function(name) {
-  const code = errors[name];
+  const statusCode = errors[name];
 
-  module.exports[name] = function(message) {
+  module.exports[name] = function(message, berrCode, extras) {
+    extras = extras || {};
+    delete extras.statusCode;
+    delete extras.berrCode;
+    delete extras.message;
+
     this.constructor.prototype.__proto__ = Error.prototype;
     Error.captureStackTrace(this, this.constructor);
 
     this.name = name;
-    this.code = code;
+    this.statusCode = statusCode;
+    this.berrCode = berrCode;
     this.message = message;
-    this.fields = {};
+    _.assign(this, extras);
 
     Error.call(message);
   };
 
-  module.exports['reject' + name] = function(message) {
-    return Promise.reject(new module.exports[name](message));
+  module.exports['reject' + name] = function(message, berrCode, extras) {
+    return Promise.reject(new module.exports[name](message, berrCode, extras));
   };
 });
 
