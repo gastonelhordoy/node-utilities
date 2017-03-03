@@ -168,7 +168,7 @@ function buildBasicAuth(options) {
 function buildBodyCleaner(options) {
   options = options || {};
   _.defaults(options, {
-    errMessage: 'Missing body'
+    errMessage: 'Missing information for the operation'
   });
 
   let fields = ['id', '_id', 'createdAt', 'modifiedAt', 'createdBy', 'modifiedBy', '__t', '__v', '_action', '_version'];
@@ -217,14 +217,17 @@ function unauthorizedErrorMiddleware(err, req, res, next) {
   next(err);
 }
 
-function buildReplyError(berrCode) {
+function buildReplyError(options) {
+  options = options || {};
+  options.errMessage = options.errMessage || 'Unexpected error';
+
   // do NOT remove `next`, express needs it to consider this an error middleware
   return function replyErrorMiddleware(err, req, res, next) {
-    const msg = err.message || berrCode;
+    const msg = err.message || options.errMessage;
     res.status(err.statusCode).send({
       name: err.name,
       message: msg,
-      berrCode: err.berrCode || berrCode,
+      berrCode: err.berrCode || options.berrCode,
       data: err.data,
       thing: err.thing
     });
