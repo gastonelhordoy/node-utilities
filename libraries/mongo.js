@@ -172,15 +172,15 @@ function asObjectId(value) {
   return mongoose.Types.ObjectId(value);
 }
 
-function compareObjectIds(id1, id2) {
+function isSameId(id1, id2) {
   id1 = id1 && (id1._id || id1);
   id2 = id2 && (id2._id || id2);
   return id1 && id2 && id1.toString() === id2.toString();
 }
 
-function objectIdsPredicate(field, id) {
+function isSameIdPredicate(field, id) {
   return function memberPredicate(doc) {
-    return compareObjectIds(doc[field], id);
+    return isSameId(doc[field], id);
   };
 }
 
@@ -228,8 +228,8 @@ module.exports = {
 
   asObjectId: asObjectId,
   isObjectId: isObjectId,
-  compareObjectIds: compareObjectIds,
-  compareObjectIdsPredicate: objectIdsPredicate,
+  isSameId: isSameId,
+  isSameIdPredicate: isSameIdPredicate,
 
   toRegex: toRegex,
   toRegexIfString: toRegexIfString,
