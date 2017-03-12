@@ -219,6 +219,10 @@ function requiredValidatorItem(msg, berrCode) {
   return validatorItem(validations.required, msg, berrCode);
 }
 
+function objectIdValidatorItem(msg, berrCode) {
+  return validatorItem(isObjectId, msg, berrCode);
+}
+
 
 module.exports = {
   bootstrap: bootstrap,
@@ -240,5 +244,6 @@ module.exports = {
 
   nonEmptyValidatorItem: nonEmptyValidatorItem,
   emailValidatorItem: emailValidatorItem,
-  requiredValidatorItem: requiredValidatorItem
+  requiredValidatorItem: requiredValidatorItem,
+  objectIdValidatorItem: objectIdValidatorItem
 };
