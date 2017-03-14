@@ -19,6 +19,12 @@ const errors = {
   ServiceUnavailable: 503
 };
 
+module.exports.map = _.invert(errors);
+
+module.exports.getName = function getName(status) {
+  return module.exports.map[status];
+};
+
 Object.keys(errors).forEach(function(name) {
   const statusCode = errors[name];
 
@@ -67,4 +73,3 @@ module.exports.bootstrap = function bootstrap(nconf) {
   module.exports.handleError = rollbar.handleError;
   module.exports.handleErrorWithPayloadData = rollbar.handleErrorWithPayloadData;
 };
-
