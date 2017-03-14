@@ -210,11 +210,16 @@ function buildErrorLogger(logger) {
   };
 }
 
-function unauthorizedErrorMiddleware(err, req, res, next) {
-  if (err.name === 'UnauthorizedError') {
-    err.statusCode = 401;
-  }
-  next(err);
+function buildUnauthErrorMiddleware(options) {
+  options = options || {};
+
+  return function unauthErrorMiddleware(err, req, res, next) {
+    if (err.name === 'UnauthorizedError') {
+      err.statusCode = 401;
+      err.berrCode = options.berrCode;
+    }
+    next(err);
+  };
 }
 
 function buildReplyError(options) {
@@ -240,7 +245,7 @@ module.exports = function buildMiddlewares(options) {
     bodyCleaner: buildBodyCleaner(options.bodyCleaner),
     requestParser: buildRequestParser(options.requestParser),
     errorLogger: buildErrorLogger(options.errorLogger),
-    unauthorizedErrorMiddleware: unauthorizedErrorMiddleware
+    unauthErrorMiddleware: buildUnauthErrorMiddleware(options.unauthError)
   };
 };
 
@@ -253,5 +258,5 @@ module.exports.buildBodyCleaner = buildBodyCleaner;
 module.exports.buildRequestParser = buildRequestParser;
 
 module.exports.buildErrorLogger = buildErrorLogger;
-module.exports.unauthorizedErrorMiddleware = unauthorizedErrorMiddleware;
+module.exports.buildUnauthErrorMiddleware = buildUnauthErrorMiddleware;
 module.exports.buildReplyError = buildReplyError;
