@@ -6,7 +6,6 @@ const rollbar = require('rollbar');
 
 const errors = {
   BadRequest        : 400,
-  InvalidArgument   : 400,
   InvalidCredentials: 401,
   PaymentRequired   : 402,
   Forbidden         : 403,
