@@ -1,6 +1,6 @@
 {
   "name": "node-utilities",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "repository": {
     "type": "git",
@@ -16,6 +16,7 @@
     "email-validator": "^1.0.7",
     "event-stream": "^3.3.4",
     "is-json": "^2.0.1",
+    "isemail": "^2.2.1",
     "konphyg": "git://github.com/gastonelhordoy/konphyg.git#master",
     "lodash": "^4.6.1",
     "lodash-deep": "^2.0.0",
