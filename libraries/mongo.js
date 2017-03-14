@@ -82,9 +82,21 @@ function translateError(err, options) {
     const firstKey = Object.keys(err.errors)[0];
     return translateError(err.errors[firstKey]);
 
+  } else if (err.name === 'ValidatorError') {
+    let msg = 'Invalid value for "' + err.path + '"';
+    let berrCode = err.berrCode;
+    if (err.kind === 'required' && _.startsWith(err.message, 'BERR-')) {
+      berrCode = err.message;
+      if (options.lookup) {
+        msg = options.lookup[berrCode];
+      }
+    }
+    return new errors.BadRequest(msg, berrCode);
+
   } else if (err.name === 'CastError') {
     const msg = '"' + err.value + '"' + ' is not a valid identifier';
     return new errors.BadRequest(msg, options.invalidIdentifier);
+
   } else if (err.name === 'MongoError') {
     switch (err.code) {
       case 11000:
