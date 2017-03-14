@@ -223,6 +223,10 @@ function objectIdValidatorItem(msg, berrCode) {
   return validatorItem(isObjectId, msg, berrCode);
 }
 
+function enumValidatorItem(list, msg, berrCode) {
+  return validatorItem(validations.buildEnum(list), msg, berrCode);
+}
+
 
 module.exports = {
   bootstrap: bootstrap,
@@ -245,5 +249,6 @@ module.exports = {
   nonEmptyValidatorItem: nonEmptyValidatorItem,
   emailValidatorItem: emailValidatorItem,
   requiredValidatorItem: requiredValidatorItem,
-  objectIdValidatorItem: objectIdValidatorItem
+  objectIdValidatorItem: objectIdValidatorItem,
+  enumValidatorItem: enumValidatorItem
 };
