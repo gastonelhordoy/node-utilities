@@ -20,12 +20,12 @@ function bootstrap(nconf, options) {
   let connectionResolved = false;
 
   return new Promise((resolve, reject) => {
-    const connectionUrl = nconf.get('MONGODB_URL');
+    const connectionUrl = nconf.get('MONGODB:URL');
     const connectionOptions = {
       config: {
         // http://mongoosejs.com/docs/guide.html#indexes
         // https://github.com/Automattic/mongoose/issues/1875
-        autoIndex: nconf.isTrue('MONGODB_INDEXES')
+        autoIndex: nconf.isTrue('MONGODB:INDEXES')
       },
       // mLab recommended mongoose connection options
       // http://blog.mlab.com/2014/04/mongodb-driver-mongoose/
