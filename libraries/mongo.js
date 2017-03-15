@@ -80,7 +80,7 @@ function translateError(err, options) {
     // FIXME list all the errors!
     // Just return the first error encountered
     const firstKey = Object.keys(err.errors)[0];
-    return translateError(err.errors[firstKey]);
+    return translateError(err.errors[firstKey], options);
 
   } else if (err.name === 'ValidatorError') {
     let msg = 'Invalid value for "' + err.path + '"';

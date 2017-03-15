@@ -215,8 +215,10 @@ function buildUnauthErrorMiddleware(options) {
 
   return function unauthErrorMiddleware(err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
+      err.name = errors.getName(401);
       err.statusCode = 401;
       err.berrCode = options.berrCode;
+      err.message = (options.lookup && options.berrCode && options.lookup[options.berrCode]) || err.message;
     }
     next(err);
   };
