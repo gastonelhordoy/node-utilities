@@ -1,31 +1,31 @@
-'use strict';
+'use strict'
 
-const fs = require('fs');
-const _ = require('lodash');
+const fs = require('fs')
+const _ = require('lodash')
 
 module.exports = function (path, options) {
-  options = options || {};
-  const modules = {};
-  const files = fs.readdirSync(path);
+  options = options || {}
+  const modules = {}
+  const files = fs.readdirSync(path)
 
   files.forEach(function (file) {
     if (/\.js$/.test(file) && file !== 'index.js') {
-      let name = file;
+      let name = file
 
       // This smells a little too specific
       if (options.stripFromName) {
-        name = name.replace(options.stripFromName, '');
+        name = name.replace(options.stripFromName, '')
       }
 
       // Convert "something-controller.js" to "somethingControlller"
-      name = name.replace(/\.js/, '');
+      name = name.replace(/\.js/, '')
       if (!options.preserveName) {
-        name = _.camelCase(name);
+        name = _.camelCase(name)
       }
 
-      modules[name] = require(path + '/' + file);
+      modules[name] = require(path + '/' + file)
     }
-  });
+  })
 
-  return modules;
-};
+  return modules
+}

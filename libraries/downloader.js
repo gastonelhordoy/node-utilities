@@ -1,24 +1,24 @@
-'use strict';
+'use strict'
 
-const fs = require('fs');
-const download = require('download');
-const tmp = require('./tmp');
+const fs = require('fs')
+const download = require('download')
+const tmp = require('./tmp')
 
-function tmpFile(url) {
+function tmpFile (url) {
   return tmp.file()
   .then(tmpFile => {
     return download(url)
     .then(data => {
-      return fs.writeFileAsync(tmpFile.path, data);
+      return fs.writeFileAsync(tmpFile.path, data)
     })
     .then(() => {
-      return tmpFile;
-    });
-  });
+      return tmpFile
+    })
+  })
 }
 
 module.exports = {
   image: require('./image-downloader'),
   file: download,
   tmpFile: tmpFile
-};
+}

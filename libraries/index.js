@@ -1,3 +1,3 @@
-'use strict';
+'use strict'
 
-module.exports = require('./require-all')(__dirname);
+module.exports = require('./require-all')(__dirname)

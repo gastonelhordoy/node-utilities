@@ -1,6 +1,6 @@
 {
   "name": "node-utilities",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "private": false,
   "repository": {
     "type": "git",
@@ -31,10 +31,9 @@
     "tmp": "0.0.28",
     "uuid": "^3.0.1"
   },
-  "optionalDependencies": {
-    "mongoose": "*"
+  "devDependencies": {
+    "standard": "^9.0.2"
   },
-  "devDependencies": {},
   "subdomain": "node-utilities",
   "scripts": {
     "start": "index.js"
