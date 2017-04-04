@@ -21,9 +21,31 @@ function buildEnumValidator (list) {
   }
 }
 
+function buildMinValidator (min) {
+  return value => {
+    return value >= min
+  }
+}
+
+function buildMaxValidator (max) {
+  return value => {
+    return value <= max
+  }
+}
+
+function buildBetweenValidator (min, max) {
+  return value => {
+    return value >= min && value <= max
+  }
+}
+
 module.exports = {
   email: emailValidator,
   nonEmpty: nonEmptyValidator,
   required: requiredValidator,
-  buildEnum: buildEnumValidator
+
+  enum: buildEnumValidator,
+  min: buildMinValidator,
+  max: buildMaxValidator,
+  between: buildBetweenValidator
 }

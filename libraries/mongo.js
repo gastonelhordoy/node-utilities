@@ -167,7 +167,19 @@ function objectIdValidatorItem (msg, berrCode) {
 }
 
 function enumValidatorItem (list, msg, berrCode) {
-  return validatorItem(validations.buildEnum(list), msg, berrCode)
+  return validatorItem(validations.enum(list), msg, berrCode)
+}
+
+function minValidatorItem (min, msg, berrCode) {
+  return validatorItem(validations.min(min), msg, berrCode)
+}
+
+function maxValidatorItem (max, msg, berrCode) {
+  return validatorItem(validations.max(max), msg, berrCode)
+}
+
+function betweenValidatorItem (min, max, msg, berrCode) {
+  return validatorItem(validations.between(min, max), msg, berrCode)
 }
 
 module.exports = {
@@ -192,5 +204,8 @@ module.exports = {
   emailValidatorItem: emailValidatorItem,
   requiredValidatorItem: requiredValidatorItem,
   objectIdValidatorItem: objectIdValidatorItem,
-  enumValidatorItem: enumValidatorItem
+  enumValidatorItem: enumValidatorItem,
+  minValidatorItem: minValidatorItem,
+  maxValidatorItem: maxValidatorItem,
+  betweenValidatorItem: betweenValidatorItem
 }
