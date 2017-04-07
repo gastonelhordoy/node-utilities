@@ -5,56 +5,43 @@ const Promise = require('bluebird')
 const util = require('util')
 const rollbar = require('rollbar')
 
-const errors = {
-  BadRequest: 400,
-  InvalidCredentials: 401,
-  PaymentRequired: 402,
-  Forbidden: 403,
-  NotFound: 404,
-  NotSupported: 405,
-  Conflict: 409,
-
-  Internal: 500,
-  BadGateway: 502,
-  ServiceUnavailable: 503
+const STATUS_CODES = {
+  400: 'BadRequest',
+  401: 'InvalidCredentials',
+  402: 'PaymentRequired',
+  403: 'Forbidden',
+  404: 'NotFound',
+  405: 'NotSupported',
+  409: 'Conflict',
+  500: 'Internal',
+  502: 'BadGateway',
+  503: 'ServiceUnavailable'
 }
 
-module.exports.map = _.invert(errors)
+let BERR_PREFIX = 'BERR-'
+let berrMap = {}
 
-module.exports.getName = function getName (status) {
-  return module.exports.map[status]
+function isBerrCode (code) {
+  return _.startsWith(code, BERR_PREFIX)
+}
+function isExistentBerrCode (code) {
+  return isBerrCode(code) && !!berrMap[code]
+}
+function getBerrMessage (code) {
+  return berrMap[code]
+}
+function getStatusName (status) {
+  return STATUS_CODES[status]
 }
 
-Object.keys(errors).forEach(function (name) {
-  const HttpError = function (message, berrCode, extras) {
-    extras = extras || {}
-    delete extras.statusCode
-    delete extras.berrCode
-    delete extras.message
-
-    // Error.captureStackTrace(this, this.constructor)
-
-    this.berrCode = berrCode
-    this.message = message
-    _.assign(this, extras)
-
-    Error.call(message)
+function bootstrap (nconf, berrCodes) {
+  berrMap = berrCodes || {}
+  if (nconf.get('ERRORS:BERR_PREFIX')) {
+    BERR_PREFIX = nconf.get('ERRORS:BERR_PREFIX')
   }
-  HttpError.displayName = name
-  HttpError.prototype.name = name
-  HttpError.prototype.statusCode = errors[name]
-  util.inherits(HttpError, Error)
 
-  module.exports[name] = HttpError
-  module.exports['reject' + name] = function (message, berrCode, extras) {
-    return Promise.reject(new module.exports[name](message, berrCode, extras))
-  }
-})
-
-module.exports.bootstrap = function bootstrap (nconf) {
   const isProd = process.env.NODE_ENV === 'production'
-  const rollbarToken = nconf.get('ROLLBAR:ACCESS_TOKEN')
-
+  const rollbarToken = nconf.get('ERRORS:ROLLBAR_TOKEN')
   if (!isProd || _.isEmpty(rollbarToken)) {
     module.exports.handleError = _.noop
     module.exports.handleErrorWithPayloadData = _.noop
@@ -72,3 +59,36 @@ module.exports.bootstrap = function bootstrap (nconf) {
   module.exports.handleError = rollbar.handleError
   module.exports.handleErrorWithPayloadData = rollbar.handleErrorWithPayloadData
 }
+
+module.exports = {
+  bootstrap,
+  isExistentBerrCode,
+  getBerrMessage,
+  getStatusName
+}
+
+_.each(STATUS_CODES, (statusCode, name) => {
+  const HttpError = function (message, extras) {
+    extras = extras || {}
+    delete extras.statusCode
+
+    if (isExistentBerrCode(message)) {
+      this.berrCode = message
+      message = berrMap[message]
+    }
+    this.message = message
+    _.defaults(this, extras)
+
+    Error.captureStackTrace(this, this.constructor)
+    Error.call(message)
+  }
+  HttpError.displayName = name
+  HttpError.prototype.name = name
+  HttpError.prototype.statusCode = statusCode
+  util.inherits(HttpError, Error)
+
+  module.exports[name] = HttpError
+  module.exports['reject' + name] = (message, extras) => {
+    return Promise.reject(new module.exports[name](message, extras))
+  }
+})

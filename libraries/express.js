@@ -38,7 +38,7 @@ function buildQuerifyConditions (options) {
   // create middleware
   return function querifyConditionsMiddleware (req, res, next) {
     if (!parseQueryStringParam(req, 'conditions', false, options.logger)) {
-      return next(new errors.BadRequest(options.errMessage, options.berrCode))
+      return next(new errors.BadRequest(options.berrCode))
     }
 
     req.conditions = _.deepMapValues(req.query.conditions || {}, (value, path) => {
@@ -70,7 +70,7 @@ function buildQuerifyOptions (options) {
   // create middleware
   return function querifyOptionsMiddleware (req, res, next) {
     if (_.isString(req.query.populate) && !parseQueryStringParam(req, 'populate', true, options.logger)) {
-      return next(new errors.BadRequest(options.errMessage, options.berrCode))
+      return next(new errors.BadRequest(options.berrCode))
     }
 
     if (options.cleanup) {
@@ -101,12 +101,10 @@ function buildQuerify (options) {
   const querifyOptions = buildQuerifyOptions({
     cleanup: false,
     logger: options.logger,
-    errMessage: options.errs.queryOptionsMessage,
     berrCode: options.errs.queryOptionsBerrCode
   })
   const querifyConditions = buildQuerifyConditions({
     logger: options.logger,
-    errMessage: options.errs.queryConditionsMessage,
     berrCode: options.errs.queryConditionsBerrCode
   })
 
@@ -114,7 +112,7 @@ function buildQuerify (options) {
   return function querifyMiddleware (req, res, next) {
     req.query.page = req.query.page && parseInt(req.query.page)
     if (req.query.page && req.query.page < 0) {
-      return next(new errors.BadRequest(options.errs.invalidPageMessage, options.errs.invalidPageBerrCode))
+      return next(new errors.BadRequest(options.errs.invalidPageBerrCode))
     }
 
     // always limit the number of information that can be retrieved
@@ -122,11 +120,11 @@ function buildQuerify (options) {
     if (!req.query.limit || req.query.limit > options.maxQueryResults) {
       req.query.limit = options.maxQueryResults
     } else if (req.query.limit < 0) {
-      return next(new errors.BadRequest(options.errs.queryResultsMessage, options.errs.queryResultsBerrCode))
+      return next(new errors.BadRequest(options.errs.queryResultsBerrCode))
     }
 
     if (!parseQueryStringParam(req, 'sort', false, options.logger)) {
-      return next(new errors.BadRequest(options.errs.sortOrderMessage, options.errs.sortOrderBerrCode))
+      return next(new errors.BadRequest(options.errs.sortOrderBerrCode))
     }
 
     querifyConditions(req, res, function (err) {
@@ -156,7 +154,7 @@ function buildBasicAuth (options) {
     if (credentials && credentials.name === options.name && credentials.pass === options.pass) {
       return next()
     }
-    next(new errors.InvalidCredentials(options.errMessage, options.berrCode))
+    next(new errors.InvalidCredentials(options.berrCode))
   }
 }
 
@@ -173,7 +171,7 @@ function buildBodyCleaner (options) {
 
   return function bodyCleanerMiddleware (req, res, next) {
     if (!req.body || _.isEmpty(req.body)) {
-      next(new errors.BadRequest(options.errMessage, options.berrCode))
+      next(new errors.BadRequest(options.berrCode))
     } else {
       _.each(fields, field => {
         delete req.body[field]
@@ -210,10 +208,10 @@ function buildUnauthErrorMiddleware (options) {
 
   return function unauthErrorMiddleware (err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
-      err.name = errors.getName(401)
+      err.name = errors.getStatusName(401)
       err.statusCode = 401
       err.berrCode = options.berrCode
-      err.message = (options.lookup && options.berrCode && options.lookup[options.berrCode]) || err.message
+      err.message = (options.berrCode && errors.getBerrMessage(options.berrCode)) || err.message
     }
     next(err)
   }

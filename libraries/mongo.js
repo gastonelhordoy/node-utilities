@@ -5,10 +5,13 @@ const errors = require('./errors')
 const validations = require('./validations')
 
 let mongoose
+let config = {}
 
-function init (mongooseInstance) {
+function init (mongooseInstance, newConfig) {
   mongoose = mongooseInstance
+  config = newConfig || {}
 }
+
 function getMongoose () {
   if (!mongoose) {
     throw new Error('Mongoose has not yet been initialized. Please run mongo.init(mongoose) before using this library.')
@@ -19,30 +22,27 @@ function getMongoose () {
 // Parse errors from mongoose so that a useful error code and message gets returned.
 function translateError (err, options) {
   options = options || {}
+  const logger = options.logger || console
+
   if (err.name === 'ValidationError') {
     // FIXME list all the errors!
     // Just return the first error encountered
+    logger.warn(`ValidationError: ${err.errors.length}`)
     const firstKey = Object.keys(err.errors)[0]
     return translateError(err.errors[firstKey], options)
   } else if (err.name === 'ValidatorError') {
-    let msg = 'Invalid value for "' + err.path + '"'
-    let berrCode = err.berrCode
-    if (err.kind === 'required' && _.startsWith(err.message, 'BERR-')) {
-      berrCode = err.message
-      if (options.lookup) {
-        msg = options.lookup[berrCode]
-      }
-    }
-    return new errors.BadRequest(msg, berrCode)
+    logger.warn(`ValidatorError: ${err.path} | ${err.value}`)
+    let msg = errors.isExistentBerrCode(err.message) ? err.message : options.validationFailed || err.message || 'Validation Failed'
+    return new errors.BadRequest(msg)
   } else if (err.name === 'CastError') {
-    const msg = '"' + err.value + '"' + ' is not a valid identifier'
-    return new errors.BadRequest(msg, options.invalidIdentifier)
+    logger.warn(`CastError: ${err.value}`)
+    return new errors.BadRequest(options.invalidIdentifier || 'Invalid identifier')
   } else if (err.name === 'MongoError') {
     switch (err.code) {
       case 11000:
-        return new errors.Conflict('Duplicate', options.duplicate)
+        return new errors.Conflict(options.duplicate || 'Duplicate')
       default:
-        return new errors.Internal('Operation failed', options.operationFailed)
+        return new errors.Internal(options.operationFailed || 'Operation failed')
     }
   }
 }
@@ -92,7 +92,7 @@ function setOptions (query, options) {
   if (options.page) {
     // when pagination is required, then both page and limit must be defined.
     if (!options.limit) {
-      // throw new errors.BadRequest('Se debe indicar la cantidad de registros por página para búsquedas paginadas');
+      throw new errors.BadRequest(config.noPageSizeBerrCode || 'Page size is required for paged queries')
     }
     // this is a quick way to achieve pagination, but for high volume data it might not scale properly
     query.skip((options.page - 1) * options.limit)
@@ -141,45 +141,44 @@ function toRegexIfString (conditions, key) {
   }
 }
 
-function validatorItem (validator, msg, berrCode) {
+function validatorItem (validator, msg) {
   // aligned with errors module which generates errors with a business code useful for i18n
   return {
     validator: validator,
-    msg: msg,
-    berrCode: berrCode
+    msg: msg
   }
 }
 
-function nonEmptyValidatorItem (msg, berrCode) {
-  return validatorItem(validations.nonEmpty, msg, berrCode)
+function nonEmptyValidatorItem (msg) {
+  return validatorItem(validations.nonEmpty, msg)
 }
 
-function emailValidatorItem (msg, berrCode) {
-  return validatorItem(validations.email, msg, berrCode)
+function emailValidatorItem (msg) {
+  return validatorItem(validations.email, msg)
 }
 
-function requiredValidatorItem (msg, berrCode) {
-  return validatorItem(validations.required, msg, berrCode)
+function requiredValidatorItem (msg) {
+  return validatorItem(validations.required, msg)
 }
 
-function objectIdValidatorItem (msg, berrCode) {
-  return validatorItem(isObjectId, msg, berrCode)
+function objectIdValidatorItem (msg) {
+  return validatorItem(isObjectId, msg)
 }
 
-function enumValidatorItem (list, msg, berrCode) {
-  return validatorItem(validations.enum(list), msg, berrCode)
+function enumValidatorItem (list, msg) {
+  return validatorItem(validations.enum(list), msg)
 }
 
-function minValidatorItem (min, msg, berrCode) {
-  return validatorItem(validations.min(min), msg, berrCode)
+function minValidatorItem (min, msg) {
+  return validatorItem(validations.min(min), msg)
 }
 
-function maxValidatorItem (max, msg, berrCode) {
-  return validatorItem(validations.max(max), msg, berrCode)
+function maxValidatorItem (max, msg) {
+  return validatorItem(validations.max(max), msg)
 }
 
-function betweenValidatorItem (min, max, msg, berrCode) {
-  return validatorItem(validations.between(min, max), msg, berrCode)
+function betweenValidatorItem (min, max, msg) {
+  return validatorItem(validations.between(min, max), msg)
 }
 
 module.exports = {
