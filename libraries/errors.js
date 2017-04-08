@@ -67,7 +67,9 @@ module.exports = {
   getStatusName
 }
 
-_.each(STATUS_CODES, (statusCode, name) => {
+_.each(STATUS_CODES, (name, statusCode) => {
+  statusCode = parseInt(statusCode)
+
   const HttpError = function (message, extras) {
     extras = extras || {}
     delete extras.statusCode

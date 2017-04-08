@@ -3,11 +3,11 @@
 const _ = require('lodash')
 const basicAuth = require('basic-auth')
 const isJSON = require('is-json')
-
-const errors = require('./errors')
 const entityParser = require('./entity-parser')
 
 const BOOLEAN_REGEX = /^(true|yes|1)$/i
+
+let errors
 
 function parseQueryStringParam (req, key, flexible, logger) {
   logger = logger || console
@@ -234,24 +234,18 @@ function buildReplyError (options) {
   }
 }
 
-module.exports = function buildMiddlewares (options) {
-  return {
-    basicAuth: buildBasicAuth(options.basicAuth),
-    bodyCleaner: buildBodyCleaner(options.bodyCleaner),
-    requestParser: buildRequestParser(options.requestParser),
-    errorLogger: buildErrorLogger(options.errorLogger),
-    unauthErrorMiddleware: buildUnauthErrorMiddleware(options.unauthError)
-  }
+module.exports = function initExpressUtils (_errors) {
+  errors = _errors
+
+  module.exports.buildQuerify = buildQuerify
+  module.exports.buildQuerifyOptions = buildQuerifyOptions
+  module.exports.buildQuerifyConditions = buildQuerifyConditions
+
+  module.exports.buildBasicAuth = buildBasicAuth
+  module.exports.buildBodyCleaner = buildBodyCleaner
+  module.exports.buildRequestParser = buildRequestParser
+
+  module.exports.buildErrorLogger = buildErrorLogger
+  module.exports.buildUnauthErrorMiddleware = buildUnauthErrorMiddleware
+  module.exports.buildReplyError = buildReplyError
 }
-
-module.exports.buildQuerify = buildQuerify
-module.exports.buildQuerifyOptions = buildQuerifyOptions
-module.exports.buildQuerifyConditions = buildQuerifyConditions
-
-module.exports.buildBasicAuth = buildBasicAuth
-module.exports.buildBodyCleaner = buildBodyCleaner
-module.exports.buildRequestParser = buildRequestParser
-
-module.exports.buildErrorLogger = buildErrorLogger
-module.exports.buildUnauthErrorMiddleware = buildUnauthErrorMiddleware
-module.exports.buildReplyError = buildReplyError

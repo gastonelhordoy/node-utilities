@@ -1,14 +1,15 @@
 'use strict'
 
 const _ = require('lodash')
-const errors = require('./errors')
 const validations = require('./validations')
 
 let mongoose
 let config = {}
+let errors
 
-function init (mongooseInstance, newConfig) {
+function bootstrap (mongooseInstance, newErrors, newConfig) {
   mongoose = mongooseInstance
+  errors = newErrors || {}
   config = newConfig || {}
 }
 
@@ -92,7 +93,7 @@ function setOptions (query, options) {
   if (options.page) {
     // when pagination is required, then both page and limit must be defined.
     if (!options.limit) {
-      throw new errors.BadRequest(config.noPageSizeBerrCode || 'Page size is required for paged queries')
+      throw new errors.BadRequest(config.noPageSizeBerrCode || 'Page size is required for paginated queries')
     }
     // this is a quick way to achieve pagination, but for high volume data it might not scale properly
     query.skip((options.page - 1) * options.limit)
@@ -182,29 +183,29 @@ function betweenValidatorItem (min, max, msg) {
 }
 
 module.exports = {
-  init: init,
+  bootstrap,
 
-  translateError: translateError,
+  translateError,
   setQueryOptions: setOptions,
 
-  asObjectId: asObjectId,
-  isObjectId: isObjectId,
-  isSameId: isSameId,
-  isSameIdPredicate: isSameIdPredicate,
+  asObjectId,
+  isObjectId,
+  isSameId,
+  isSameIdPredicate,
 
-  toRegex: toRegex,
-  toRegexIfString: toRegexIfString,
+  toRegex,
+  toRegexIfString,
 
   nonEmptyValidator: validations.nonEmpty,
   emailValidator: validations.email,
   requiredValidator: validations.required,
 
-  nonEmptyValidatorItem: nonEmptyValidatorItem,
-  emailValidatorItem: emailValidatorItem,
-  requiredValidatorItem: requiredValidatorItem,
-  objectIdValidatorItem: objectIdValidatorItem,
-  enumValidatorItem: enumValidatorItem,
-  minValidatorItem: minValidatorItem,
-  maxValidatorItem: maxValidatorItem,
-  betweenValidatorItem: betweenValidatorItem
+  nonEmptyValidatorItem,
+  emailValidatorItem,
+  requiredValidatorItem,
+  objectIdValidatorItem,
+  enumValidatorItem,
+  minValidatorItem,
+  maxValidatorItem,
+  betweenValidatorItem
 }
