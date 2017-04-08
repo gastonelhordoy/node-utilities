@@ -39,6 +39,20 @@ function buildBetweenValidator (min, max) {
   }
 }
 
+function compositeValidator (...validators) {
+  if (_.isEmpty(validators)) {
+    throw new Error('You need to specify at least one Validator in order to create a Composite Validator')
+  }
+  return function compositeValidator (value) {
+    for (let validator of validators) {
+      if (!validator(value)) {
+        return false
+      }
+    }
+    return true
+  }
+}
+
 module.exports = {
   email: emailValidator,
   nonEmpty: nonEmptyValidator,
@@ -47,5 +61,7 @@ module.exports = {
   enum: buildEnumValidator,
   min: buildMinValidator,
   max: buildMaxValidator,
-  between: buildBetweenValidator
+  between: buildBetweenValidator,
+
+  composite: compositeValidator
 }

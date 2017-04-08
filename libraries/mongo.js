@@ -158,10 +158,6 @@ function emailValidatorItem (msg) {
   return validatorItem(validations.email, msg)
 }
 
-function requiredValidatorItem (msg) {
-  return validatorItem(validations.required, msg)
-}
-
 function objectIdValidatorItem (msg) {
   return validatorItem(isObjectId, msg)
 }
@@ -182,6 +178,10 @@ function betweenValidatorItem (min, max, msg) {
   return validatorItem(validations.between(min, max), msg)
 }
 
+function compositeValidatorItem (msg, ...validators) {
+  return validatorItem(validations.composite(...validators), msg)
+}
+
 module.exports = {
   bootstrap,
 
@@ -196,16 +196,12 @@ module.exports = {
   toRegex,
   toRegexIfString,
 
-  nonEmptyValidator: validations.nonEmpty,
-  emailValidator: validations.email,
-  requiredValidator: validations.required,
-
-  nonEmptyValidatorItem,
-  emailValidatorItem,
-  requiredValidatorItem,
-  objectIdValidatorItem,
-  enumValidatorItem,
-  minValidatorItem,
-  maxValidatorItem,
-  betweenValidatorItem
+  validateNonEmpty: nonEmptyValidatorItem,
+  validateEmail: emailValidatorItem,
+  validateObjectId: objectIdValidatorItem,
+  validateEnum: enumValidatorItem,
+  validateMin: minValidatorItem,
+  validateMax: maxValidatorItem,
+  validateBetween: betweenValidatorItem,
+  validateComposite: compositeValidatorItem
 }
