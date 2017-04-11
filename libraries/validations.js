@@ -12,6 +12,9 @@ function requiredValidator (value) {
 }
 
 function buildEnumValidator (list) {
+  if (_.isEmpty(list)) {
+    throw new Error('Empty list for EnumValidator')
+  }
   return value => {
     if (!_.isArray(value)) {
       return _.includes(list, value)
@@ -21,19 +24,37 @@ function buildEnumValidator (list) {
   }
 }
 
+function buildMapValidator (map) {
+  if (_.isEmpty(map)) {
+    throw new Error('Empty map for MapValidator')
+  }
+  return value => {
+    return !!map[value]
+  }
+}
+
 function buildMinValidator (min) {
+  if (_.isNil(min) || !_.isNumber(min)) {
+    throw new Error('Invalid number for MinValidator')
+  }
   return value => {
     return value >= min
   }
 }
 
 function buildMaxValidator (max) {
+  if (_.isNil(max) || !_.isNumber(max)) {
+    throw new Error('Invalid number for MaxValidator')
+  }
   return value => {
     return value <= max
   }
 }
 
 function buildBetweenValidator (min, max) {
+  if (_.isNil(min) || !_.isNumber(min) || _.isNil(max) || !_.isNumber(max)) {
+    throw new Error('Invalid number for BetweenValidator')
+  }
   return value => {
     return value >= min && value <= max
   }
@@ -59,6 +80,8 @@ module.exports = {
   required: requiredValidator,
 
   enum: buildEnumValidator,
+  map: buildMapValidator,
+
   min: buildMinValidator,
   max: buildMaxValidator,
   between: buildBetweenValidator,
