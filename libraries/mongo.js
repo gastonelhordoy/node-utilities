@@ -166,6 +166,10 @@ function enumValidatorItem (list, msg) {
   return validatorItem(validations.enum(list), msg)
 }
 
+function mapValidatorItem (map, msg) {
+  return validatorItem(validations.map(map), msg)
+}
+
 function minValidatorItem (min, msg) {
   return validatorItem(validations.min(min), msg)
 }
@@ -200,6 +204,7 @@ module.exports = {
   validateEmail: emailValidatorItem,
   validateObjectId: objectIdValidatorItem,
   validateEnum: enumValidatorItem,
+  validateMap: mapValidatorItem,
   validateMin: minValidatorItem,
   validateMax: maxValidatorItem,
   validateBetween: betweenValidatorItem,
