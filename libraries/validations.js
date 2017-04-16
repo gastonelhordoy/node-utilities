@@ -29,7 +29,7 @@ function buildMapValidator (map) {
     throw new Error('Empty map for MapValidator')
   }
   return value => {
-    return !!map[value]
+    return !_.isNil(value) && !!map[value]
   }
 }
 
