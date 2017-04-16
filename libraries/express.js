@@ -111,7 +111,7 @@ function buildQuerify (options) {
   // create middleware
   return function querifyMiddleware (req, res, next) {
     req.query.page = req.query.page && parseInt(req.query.page)
-    if (req.query.page && req.query.page < 0) {
+    if (!_.isNil(req.query.page) && req.query.page < 1) {
       return next(new errors.BadRequest(options.errs.invalidPageBerrCode))
     }
 
