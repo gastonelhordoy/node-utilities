@@ -126,9 +126,9 @@ function isSameId (id1, id2) {
   return id1 && id2 && id1.toString() === id2.toString()
 }
 
-function isSameIdPredicate (field, id) {
-  return function memberPredicate (doc) {
-    return isSameId(doc[field], id)
+function isSameIdPredicate (id, field) {
+  return function memberPredicate (member) {
+    return isSameId(field ? member[field] : member, id)
   }
 }
 
